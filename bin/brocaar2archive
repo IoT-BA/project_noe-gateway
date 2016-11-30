@@ -1,0 +1,64 @@
+#!/usr/bin/python3
+
+import time
+import json
+import base64
+import requests
+import binascii
+import dateutil
+import dateutil.parser
+from datetime import datetime
+from pprint import pprint
+import paho.mqtt.client as mqtt
+
+def ml_call_backend(post_payload):
+    print("Sending this to Django:")
+    pprint(post_payload)
+    response = requests.post('http://lorawan.sk:8000/api/rawpoints/save/', data = json.dumps(post_payload))
+    pprint(response.status_code)
+    pprint(response.text)
+    return
+
+def rawpoint_callback(data):
+    i = []
+
+    print("RAW DATA:")
+    pprint(data)
+
+    i.append({ "node_id": str(data['devEUI']),
+               "payload": binascii.hexlify(base64.b64decode(data['data'])).decode('ASCII'),
+               "timestamp": (dateutil.parser.parse(data['time']).replace(tzinfo=None) - datetime(1970, 1, 1)).total_seconds(),
+               "rssi": data['rssi'],
+               "rowid": 1,
+            })
+
+    ml_call_backend(i)
+
+# The callback for when the client receives a CONNACK response from the server.
+def on_connect(client, userdata, flags, rc):
+    print("Connected with result code "+str(rc))
+
+    # Subscribing in on_connect() means that if we lose the connection and
+    # reconnect then subscriptions will be renewed.
+    client.subscribe("application/+/node/+/rx")
+
+# The callback for when a PUBLISH message is received from the server.
+def on_message(client, userdata, msg):
+    print(msg.topic)
+    print(msg.payload)
+    try:
+        rawpoint_callback(json.loads(msg.payload.decode('utf-8')))
+    except Exception as e:
+        pprint(e)
+        return 
+    print('----------------')
+
+client = mqtt.Client()
+client.on_connect = on_connect
+client.on_message = on_message
+
+client.connect("139.59.213.253", 1883, 60)
+
+# Blocking call that processes network traffic, dispatches callbacks and
+# handles reconnecting.
+client.loop_forever()
