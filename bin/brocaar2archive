@@ -15,6 +15,7 @@ def ml_call_backend(post_payload):
     print("Sending this to Django:")
     pprint(post_payload)
     response = requests.post('http://lorawan.sk:8000/api/rawpoints/save/', data = json.dumps(post_payload))
+    print("Response:")
     pprint(response.status_code)
     pprint(response.text)
     return
@@ -22,13 +23,13 @@ def ml_call_backend(post_payload):
 def rawpoint_callback(data):
     i = []
 
-    print("RAW DATA:")
+    print("Received data from Brocaar LoRaWAN server:")
     pprint(data)
 
     i.append({ "node_id": str(data['devEUI']),
                "payload": binascii.hexlify(base64.b64decode(data['data'])).decode('ASCII'),
-               "timestamp": (dateutil.parser.parse(data['time']).replace(tzinfo=None) - datetime(1970, 1, 1)).total_seconds(),
-               "rssi": data['rssi'],
+               "timestamp": (dateutil.parser.parse(data['rxInfo'][0]['time']).replace(tzinfo=None) - datetime(1970, 1, 1)).total_seconds(),
+               "rssi": data['rxInfo'][0]['rssi'],
                "rowid": 1,
             })
 
@@ -46,11 +47,7 @@ def on_connect(client, userdata, flags, rc):
 def on_message(client, userdata, msg):
     print(msg.topic)
     print(msg.payload)
-    try:
-        rawpoint_callback(json.loads(msg.payload.decode('utf-8')))
-    except Exception as e:
-        pprint(e)
-        return 
+    rawpoint_callback(json.loads(msg.payload.decode('utf-8')))
     print('----------------')
 
 client = mqtt.Client()
