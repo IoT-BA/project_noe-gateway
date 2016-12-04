@@ -15,30 +15,22 @@ def ml_call_backend(post_payload):
     print("Sending this to Django:")
     pprint(post_payload)
     try:
-        response = requests.post('http://lorawan.sk:8000/api/rawpoints/save/', data = json.dumps(post_payload))
+        response = requests.post('http://lorawan.sk:8000/api/gw/update/', data = json.dumps(post_payload))
         print("Response:")
         pprint(response.status_code)
         pprint(response.text)
     except Exception as e:
         pass
+
     return
 
 def rawpoint_callback(data):
-    i = []
-
     print("Received data from Brocaar LoRaWAN server:")
     pprint(data)
 
-    i.append({ "node_id": str(data['devEUI']),
-               "payload": binascii.hexlify(base64.b64decode(data['data'])).decode('ASCII'),
-               "timestamp": (dateutil.parser.parse(data['rxInfo'][0]['time']).replace(tzinfo=None) - datetime(1970, 1, 1)).total_seconds(),
-               "gw_mac": data['rxInfo'][0]['mac'],
-               "snr": data['rxInfo'][0]['loRaSNR'],
-               "rssi": data['rxInfo'][0]['rssi'],
-               "rowid": 1,
-            })
+#    data["timestamp"] = (dateutil.parser.parse(data['time']).replace(tzinfo=None) - datetime(1970, 1, 1)).total_seconds(),
 
-    ml_call_backend(i)
+    ml_call_backend(data)
 
 # The callback for when the client receives a CONNACK response from the server.
 def on_connect(client, userdata, flags, rc):
@@ -46,7 +38,7 @@ def on_connect(client, userdata, flags, rc):
 
     # Subscribing in on_connect() means that if we lose the connection and
     # reconnect then subscriptions will be renewed.
-    client.subscribe("application/+/node/+/rx")
+    client.subscribe("gateway/+/stats")
 
 # The callback for when a PUBLISH message is received from the server.
 def on_message(client, userdata, msg):
