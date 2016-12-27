@@ -29,14 +29,17 @@ def rawpoint_callback(data):
     print("Received data from Brocaar LoRaWAN server:")
     pprint(data)
 
-    i.append({ "node_id": str(data['devEUI']),
-               "payload": binascii.hexlify(base64.b64decode(data['data'])).decode('ASCII'),
-               "timestamp": (dateutil.parser.parse(data['rxInfo'][0]['time']).replace(tzinfo=None) - datetime(1970, 1, 1)).total_seconds(),
-               "gw_mac": data['rxInfo'][0]['mac'],
-               "snr": data['rxInfo'][0]['loRaSNR'],
-               "rssi": data['rxInfo'][0]['rssi'],
-               "rowid": 1,
-            })
+    try:
+        i.append({ "node_id": str(data['devEUI']),
+                   "payload": binascii.hexlify(base64.b64decode(data['data'])).decode('ASCII'),
+                   "timestamp": (dateutil.parser.parse(data['rxInfo'][0]['time']).replace(tzinfo=None) - datetime(1970, 1, 1)).total_seconds(),
+                   "gw_mac": data['rxInfo'][0]['mac'],
+                   "snr": data['rxInfo'][0]['loRaSNR'],
+                   "rssi": data['rxInfo'][0]['rssi'],
+                   "rowid": 1,
+                })
+    except Exception as e:
+        return
 
     ml_call_backend(i)
 

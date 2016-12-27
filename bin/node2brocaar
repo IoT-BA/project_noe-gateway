@@ -1,0 +1,47 @@
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+
+import time
+import json
+import base64
+import requests
+import binascii
+import dateutil
+import dateutil.parser
+from datetime import datetime
+from pprint import pprint
+import paho.mqtt.client as mqtt
+
+# Synchronize nodes betweek lorawan server from lorawan.sk to Brocaars LoRaWAN App Server
+
+def save_node_to_brocaar(post_payload):
+    print("Sending this:")
+    pprint(post_payload)
+    try:
+        response = requests.post('https://139.59.213.253:8080/api/node', data = json.dumps(post_payload), verify=False)
+        print("Response:")
+        pprint(response.status_code)
+        pprint(response.content)
+    except Exception as e:
+        print("Failed response: " + str(e))
+    return
+
+def get_nodes():
+    r = requests.get('http://www.lorawan.sk:8000/api/nodes').json()
+    return r['nodes']
+
+
+nodes = get_nodes()
+for node in nodes:
+    if 'lorawan' in node:
+        pprint(node)
+        new_node = {
+                     'name':      node['name'] + " (" + node['api_key'] + ")",
+                     'devEUI':    node['node_id'],
+                     'appEUI':    node['lorawan']['AppEUI'],
+                     'appKey':    node['lorawan']['AppKey'],
+                     'relaxFCnt': True,
+                     'rxWindow':  "RX1",
+                     'installationMargin': 5, 
+                   }
+        save_node_to_brocaar(new_node)
