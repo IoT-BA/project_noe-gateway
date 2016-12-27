@@ -14,12 +14,15 @@ import paho.mqtt.client as mqtt
 
 # Synchronize nodes betweek lorawan server from lorawan.sk to Brocaars LoRaWAN App Server
 
-def save_node_to_brocaar(post_payload):
+def save_node_to_brocaar(payload):
     print("Sending this:")
-    pprint(post_payload)
+    pprint(payload)
     try:
-        response = requests.post('https://139.59.213.253:8080/api/node', data = json.dumps(post_payload), verify=False)
+        response = requests.post('https://139.59.213.253:8080/api/node', data = json.dumps(payload), verify=False)
         print("Response:")
+        pprint(response.status_code)
+        pprint(response.content)
+        response = requests.put('https://139.59.213.253:8080/api/node/' + payload['devEUI'], data = json.dumps(payload), verify=False)
         pprint(response.status_code)
         pprint(response.content)
     except Exception as e:
