@@ -1,0 +1,40 @@
+version: "2"
+services:
+  forwarder:
+    environment:
+      # Zatial kym nebude automaticka registracia
+      - PACKET_FORWARDER_GATEWAY_ID=44454641554c5430
+      - PACKET_FORWARDER_SERVER_ADDRESS=bridge
+      - PACKET_FORWARDER_SERV_PORT_UP=11680
+      - PACKET_FORWARDER_SERV_PORT_DOWN=11680
+      - PACKET_FORWARDER_KEEPALIVE_INTERVAL=10
+      - PACKET_FORWARDER_STAT_INTERVAL=30
+      - PACKET_FORWARDER_PUSH_TIMEOUT_MS=100
+      - PACKET_FORWARDER_FORWARD_CRC_VALID=true
+      - PACKET_FORWARDER_FORWARD_CRC_ERROR=true
+      - PACKET_FORWARDER_FORWARD_CRC_DISABLED=true
+    build:
+      context: ./forwarder
+      dockerfile: Dockerfile-packet_forwarder
+    image: packet_forwarder_image:beta
+    links:
+      - bridge
+    volumes:
+      - /sys:/sys
+    devices:
+      - /dev/spidev0.0:/dev/spidev0.0
+      - /dev/spidev0.1:/dev/spidev0.1
+    depends_on:
+      - bridge
+    restart: always
+  bridge:
+    build:
+      context: ./gateway-bridge
+      dockerfile: Dockerfile-gateway_bridge
+    image: gateway_bridge:beta
+    environment:
+      - MQTT_SERVER=tcp://###MQTT_SERVER###
+      - UDP_BIND=bridge:11680
+      - MQTT_USERNAME=###MQTT_USER###
+      - MQTT_PASSWORD=###MQTT_PASS###
+      - LOG_LEVEL=2
