@@ -11,4 +11,6 @@ print("Getting serial for gateway MAC: " + mac)
 
 r = requests.get('http://lorawan.sk:8000/api/gw/register/' + mac)
 print("Retcode: " + str(r.status_code))
-print("Serial: " + str(r.json()['serial']))
+serial = str(r.json()['serial'])
+print("Serial: " + serial)
+print("Gateway status info: http://lorawan.sk:8000/api/gw/info/" + serial) 
