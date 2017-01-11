@@ -33,7 +33,7 @@ services:
       dockerfile: Dockerfile-gateway_bridge
     image: gateway_bridge:beta
     environment:
-      - MQTT_SERVER=tcp://###MQTT_SERVER###
+      - MQTT_SERVER=tcp://139.59.213.253:1883
       - UDP_BIND=bridge:11680
       - MQTT_USERNAME=###MQTT_USER###
       - MQTT_PASSWORD=###MQTT_PASS###
