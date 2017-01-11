@@ -1,5 +1,7 @@
 ## Install
 
+Flash SD card with RASPBIAN JESSIE LITE
+
 Connect to Raspberry PI zero using SSH - username: pi  password: raspberry
 
 Run the following commands:
