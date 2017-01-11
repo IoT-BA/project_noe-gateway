@@ -1,0 +1,14 @@
+#!/usr/bin/python3
+
+import json
+import requests
+from pprint import pprint
+from uuid import getnode as get_mac
+
+mac = ''.join(("%012X" % get_mac())[i:i+2] for i in range(0, 12, 2)).lower()
+
+print("Getting serial for gateway MAC: " + mac)
+
+r = requests.get('http://lorawan.sk:8000/api/gw/register/' + mac)
+print("Retcode: " + str(r.status_code))
+print("Serial: " + str(r.json()['serial']))
