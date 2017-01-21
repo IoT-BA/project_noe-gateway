@@ -2,10 +2,19 @@
 
 import json
 import requests
+import argparse
 from pprint import pprint
 from uuid import getnode as get_mac
 
-mac = ''.join(("%012X" % get_mac())[i:i+2] for i in range(0, 12, 2)).lower()
+parser = argparse.ArgumentParser(description='Get serial for GW by supplying MAC address of the Gateway')
+parser.add_argument(
+                     '--mac', action='store',
+                     default = ''.join(("%012X" % get_mac())[i:i+2] for i in range(0, 12, 2)).lower(),
+                     help='MAC address, no spaces, no separators, lowercase',
+                   )
+args = parser.parse_args()
+
+mac = args.mac
 
 print("Getting serial for gateway MAC: " + mac)
 
