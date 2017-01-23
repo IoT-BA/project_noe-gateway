@@ -1,6 +1,6 @@
 ## Packet_forwarder
 
-Dockerfile for packet_forwarder which will run packet_forwarder with default env settings specified in file.
+Dockerfile for packet_forwarder which will run packet_forwarder with default  settings specified as environment variables.
 ### Build image
 
 `sudo docker build -t packet_forwarder_image:beta -f Dockerfile-packet_forwarder .`
