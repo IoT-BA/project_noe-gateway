@@ -1,0 +1,59 @@
+#!/usr/bin/python
+
+import time
+import json
+import base64
+import requests
+import binascii
+import dateutil
+import dateutil.parser
+from datetime import datetime
+from pprint import pprint
+import paho.mqtt.client as mqtt
+
+def ml_call_backend(post_payload):
+    print("Sending to Django")
+    try:
+        response = requests.post('http://lorawan.sk:8000/api/rawpoints/save/', data = json.dumps(post_payload))
+        print("Response:")
+        pprint(response.status_code)
+        pprint(response.text)
+    except Exception as e:
+        pass
+    return
+
+def rawpoint_callback(data):
+    i = []
+
+    try:
+        i.append({
+                   "payload": binascii.hexlify(base64.b64decode(data['phyPayload'])).decode('ASCII'),
+                   "timestamp": (dateutil.parser.parse(data['rxInfo']['time']).replace(tzinfo=None) - datetime(1970, 1, 1)).total_seconds(),
+                   "gw_mac": data['rxInfo']['mac'],
+                   "snr": data['rxInfo']['loRaSNR'],
+                   "rssi": data['rxInfo']['rssi'],
+                   "node_id": '000000008a68a920',
+                })
+    except Exception as e:
+        pass
+
+    pprint(i)
+    ml_call_backend(i)
+
+def on_connect(client, userdata, flags, rc):
+    print("Connected with result code "+str(rc))
+    client.subscribe("+/+/rx")
+
+def on_message(client, userdata, msg):
+    print(msg.topic)
+    print(msg.payload)
+    rawpoint_callback(json.loads(msg.payload.decode('utf-8')))
+    print('----------------')
+
+client = mqtt.Client()
+client.on_connect = on_connect
+client.on_message = on_message
+
+client.connect("139.59.213.253", 1883, 60)
+
+client.loop_forever()
