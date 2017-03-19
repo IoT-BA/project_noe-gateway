@@ -1,5 +1,5 @@
-# project Noe
-Network of Everything
+# project Noe, Gateway
+sw stack for gateways
 
 
 
