@@ -3,7 +3,7 @@ services:
   forwarder:
     environment:
       # Zatial kym nebude automaticka registracia
-      - PACKET_FORWARDER_GATEWAY_ID=44454641554c5430
+      - PACKET_FORWARDER_GATEWAY_ID=###GATEWAY_ID###
       - PACKET_FORWARDER_SERVER_ADDRESS=bridge
       - PACKET_FORWARDER_SERV_PORT_UP=11680
       - PACKET_FORWARDER_SERV_PORT_DOWN=11680
@@ -13,10 +13,7 @@ services:
       - PACKET_FORWARDER_FORWARD_CRC_VALID=true
       - PACKET_FORWARDER_FORWARD_CRC_ERROR=true
       - PACKET_FORWARDER_FORWARD_CRC_DISABLED=true
-    build:
-      context: ./forwarder
-      dockerfile: Dockerfile-packet_forwarder
-    image: packet_forwarder_image:beta
+    image: iotba/rpi-packet_forwarder:latest
     links:
       - bridge
     volumes:
@@ -28,13 +25,12 @@ services:
       - bridge
     restart: always
   bridge:
-    build:
-      context: ./gateway-bridge
-      dockerfile: Dockerfile-gateway_bridge
-    image: gateway_bridge:beta
+    image: iotba/rpi-lora-gateway-bridge
     environment:
-      - MQTT_SERVER=tcp://139.59.213.253:1883
+      - MQTT_SERVER=tcp://lorawan.project-noe.org:1883
       - UDP_BIND=bridge:11680
       - MQTT_USERNAME=###MQTT_USER###
       - MQTT_PASSWORD=###MQTT_PASS###
       - LOG_LEVEL=2
+    restart: always
+
